@@ -98,7 +98,7 @@ def main(fout):
     i = 0
     for episode in range(1, N_EPISODES+1):
         # display current episode
-        print("episode %d" % episode)
+        # print("episode %d" % episode)
         fout.write("episode %d\n" % episode)
         sys.stdout.flush()
         # load images
@@ -119,7 +119,9 @@ def main(fout):
             sum_reward += np.mean(reward)*np.power(GAMMA,t)
 
         agent.stop_episode_and_train(current_state.tensor, reward, True)
-        print("train total reward {a}".format(a=sum_reward*255))
+        if episode % SNAPSHOT_EPISODES == 0:
+            print("episode %d" % episode)
+            print("train total reward {a}".format(a=sum_reward*255))
         fout.write("train total reward {a}\n".format(a=sum_reward*255))
         sys.stdout.flush()
 
