@@ -12,6 +12,12 @@ class State():
         prev_state = np.zeros((size[0],64,size[2],size[3]),dtype=np.float32)
         self.tensor = np.concatenate((self.image, prev_state), axis=1)
 
+    def reset_without_noise(self, x):
+        self.image = x
+        size = self.image.shape
+        prev_state = np.zeros((size[0],64,size[2],size[3]),dtype=np.float32)
+        self.tensor = np.concatenate((self.image, prev_state), axis=1)
+
     def set(self, x):
         self.image = x
         self.tensor[:,:self.image.shape[1],:,:] = self.image

@@ -52,13 +52,21 @@ def denoise_image_color(path, agent):
 
     current_states = []
     raw_channels = []
+    noisy_channels = []
+
     for i in range(c):
         current_state = State((1, 1, h, w), MOVE_RANGE)
         raw_channel = raw_x[:, i:i+1, :, :]
         raw_n = np.random.normal(MEAN, SIGMA, raw_channel.shape).astype(raw_channel.dtype) / 255
+        noisy_channel = raw_channel + raw_n
         current_state.reset(raw_channel, raw_n)
         current_states.append(current_state)
         raw_channels.append(raw_channel)
+        noisy_channels.append(noisy_channel[0, 0, :, :])
+
+    noisy_image = np.stack(noisy_channels, axis=-1)
+    noisy_image_uint8 = (np.clip(noisy_image, 0, 1) * 255 + 0.5).astype(np.uint8)
+    cv2.imwrite('img/result/color/input_noise.png', noisy_image_uint8)
 
     for t in range(EPISODE_LEN):
         denoised_channels = []
@@ -72,7 +80,7 @@ def denoise_image_color(path, agent):
         denoised_image = np.stack(denoised_channels, axis=-1)
         denoised_image = (denoised_image * 255 + 0.5).astype(np.uint8)
 
-        cv2.imwrite(f"img_result/color/step_{t}_output.png", denoised_image)
+        cv2.imwrite(f"img/result/color/step_{t}_output.png", denoised_image)
 
     for i in range(c):
         agent.stop_episode()
@@ -94,11 +102,11 @@ def main():
     optimizer.setup(model)
 
     agent = PixelWiseA3C_InnerState_ConvR(model, optimizer, EPISODE_LEN, GAMMA)
-    chainer.serializers.load_npz('model/pretrained_50.npz', agent.model)
+    chainer.serializers.load_npz('model/pretrained_15.npz', agent.model)
     agent.act_deterministically = True
     agent.model.to_gpu()
     
-    denoise_image_color('image.png', agent)
+    denoise_image_color('img/input/1.png', agent)
 
 if __name__ == '__main__':
     try:

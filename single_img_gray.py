@@ -59,14 +59,19 @@ def denoise_image(path, agent):
         current_image = np.minimum(1, current_image)
         current_image = (current_image[0] * 255 + 0.5).astype(np.uint8)
         current_image = np.transpose(current_image, (1, 2, 0))
-        cv2.imwrite(f'img_result/gray/step_{t}_output.png', current_image)
+        cv2.imwrite(f'img/result/gray/step_{t}_output.png', current_image)
         
     agent.stop_episode()
 
     I = np.maximum(0,raw_x)
     I = np.minimum(1,I)
+    N = np.maximum(0,raw_x+raw_n)
+    N = np.minimum(1,N)
     I = (I[0]*255+0.5).astype(np.uint8)
+    N = (N[0]*255+0.5).astype(np.uint8)
     I = np.transpose(I,(1,2,0))
+    N = np.transpose(N,(1,2,0))
+    cv2.imwrite('img/result/gray/input_noise.png',N)
     psnr = cv2.PSNR(current_image, I)
     print(f'Final PSNR: {psnr}')
 
@@ -81,11 +86,11 @@ def main():
     optimizer.setup(model)
 
     agent = PixelWiseA3C_InnerState_ConvR(model, optimizer, EPISODE_LEN, GAMMA)
-    chainer.serializers.load_npz('model/pretrained_50.npz', agent.model)
+    chainer.serializers.load_npz('model/pretrained_15.npz', agent.model)
     agent.act_deterministically = True
     agent.model.to_gpu()
     
-    denoise_image('gray_image.png', agent)
+    denoise_image('img/input/1.png', agent)
 
 if __name__ == '__main__':
     try:
